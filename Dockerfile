@@ -48,5 +48,6 @@ RUN set -x ; \
     python3 -m pip install --upgrade pip \
     && curl -sSL https://install.python-poetry.org | python3 - \
     && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
-    && poetry self add poetry-bumpversion
+    && poetry self add poetry-bumpversion \
+    && poetry config virtualenvs.create false
 
