@@ -1,0 +1,29 @@
+variables:
+  PYTHONVERSION: "3.8"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+default:
+  image: docker:20.10.16
+  tags:
+    - amd64
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH != ""
+
+stages:
+  - build
+  - publish
+
+build-image:
+  stage: build
+  script:
+    - echo "Building image with tag '$IMAGE_TAG'"
+    - docker build -t $IMAGE_TAG --pull --progress=plain --build-arg PYTHONVERSION=$PYTHONVERSION .
+
+push-image:
+  stage: publish
+  script:
+    - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - echo "Pushing to tag '$IMAGE_TAG'"
+    - docker push $IMAGE_TAG
