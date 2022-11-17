@@ -24,18 +24,12 @@ RUN set -x; \
     openssh-client  \
     manpages \
     less \
-    && useradd -ms /bin/bash ${USERNAME} \
+    zsh \
+    fonts-powerline \
+    && useradd -ms /usr/bin/zsh ${USERNAME} \
     &&  mkdir -p $PIP_CACHE_DIR \
     && mkdir -p /root/.ssh \
     && chmod 700 /root/.ssh/
-
-# Install Oh-My-Zsh
-
-RUN set -x; \
-    apt-get install -y --no-install-recommends \
-    zsh \
-    fonts-powerline\
-    && sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 RUN set -x; \
     apt-get install locales -y --no-install-recommends \
@@ -53,6 +47,9 @@ RUN set -x; \
     && rm -rf /var/lib/apt/lists/*
 
 USER ${USERNAME}
+RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+COPY --chown=${USERNAME}:${USERNAME} .zshrc /home/${USERNAME}/.zshrc
+
 ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
 RUN set -x ; \
     curl -sSL https://install.python-poetry.org | python3 - \
