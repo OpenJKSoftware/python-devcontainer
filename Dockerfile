@@ -29,6 +29,14 @@ RUN set -x; \
     && mkdir -p /root/.ssh \
     && chmod 700 /root/.ssh/
 
+# Install Oh-My-Zsh
+
+RUN set -x; \
+    apt-get install -y --no-install-recommends \
+    zsh \
+    fonts-powerline\
+    && sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
 RUN set -x; \
     apt-get install locales -y --no-install-recommends \
     && echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
