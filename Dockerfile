@@ -22,6 +22,8 @@ RUN set -x; \
     expect \
     git \
     openssh-client  \
+    manpages \
+    less \
     && useradd -ms /bin/bash ${USERNAME} \
     &&  mkdir -p $PIP_CACHE_DIR \
     && mkdir -p /root/.ssh \
@@ -45,8 +47,7 @@ RUN set -x; \
 USER ${USERNAME}
 ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
 RUN set -x ; \
-    python3 -m pip install --upgrade pip \
-    && curl -sSL https://install.python-poetry.org | python3 - \
+    curl -sSL https://install.python-poetry.org | python3 - \
     && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
     && poetry self add poetry-bumpversion
 
