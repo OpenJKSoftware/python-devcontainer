@@ -8,9 +8,7 @@ ARG USERNAME
 # Switch sh With Bash and enable Apt Cache
 RUN set -x; \
     rm /bin/sh && ln -s /bin/bash /bin/sh \
-    && rm -f /etc/apt/apt.conf.d/docker-clean
-
-ENV PIP_CACHE_DIR=/var/cache/buildkit/pip
+    && rm -f /etc/apt/apt.conf.d/docker-clear
 
 # Install Base Reqs
 RUN set -x; \
@@ -27,7 +25,6 @@ RUN set -x; \
     zsh \
     fonts-powerline \
     && useradd -ms /usr/bin/zsh ${USERNAME} \
-    &&  mkdir -p $PIP_CACHE_DIR \
     && mkdir -p /root/.ssh \
     && chmod 700 /root/.ssh/
 
@@ -45,6 +42,11 @@ RUN set -x; \
     apt-get -y install --no-install-recommends sudo \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PIP_CACHE_DIR=/var/cache/buildkit/pip
+RUN set -x; \
+    mkdir -p $PIP_CACHE_DIR \
+    && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
 
 USER ${USERNAME}
 RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
