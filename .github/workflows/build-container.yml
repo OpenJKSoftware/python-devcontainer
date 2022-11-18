@@ -6,6 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: "${{ github.repository }}:${{ github.ref_name }}"
 
 
 jobs:
@@ -14,14 +15,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      IMAGE_NAME: "${{ github.reopository }}:${{ github.ref_name }}"
 
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: echo "$GITHUB_CONTEXT $IMAGE_NAME"
       - name: Checkout repository
         uses: actions/checkout@v3
 
