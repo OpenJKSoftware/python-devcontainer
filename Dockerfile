@@ -3,6 +3,8 @@ ARG PYTHONVERSION=3.8
 
 # Basic Python package with Company CAs and sudo User
 FROM python:$PYTHONVERSION-buster
+LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
+
 ARG USERNAME
 
 # Switch sh With Bash and enable Apt Cache
