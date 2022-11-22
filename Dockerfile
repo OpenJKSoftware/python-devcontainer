@@ -26,6 +26,7 @@ RUN set -x; \
     less \
     zsh \
     fonts-powerline \
+    htop \
     && useradd -ms /usr/bin/zsh ${USERNAME} \
     && mkdir -p /root/.ssh \
     && chmod 700 /root/.ssh/
