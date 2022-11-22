@@ -1,5 +1,9 @@
 name: Create and publish a Docker image
 
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: ['main']
