@@ -60,7 +60,9 @@ COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
 ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
 RUN set -x ; \
-    curl -sSL https://install.python-poetry.org | python3 - \
+    python3 -m pip install --user pipx \
+    && python3 -m pipx ensurepath \
+    && pipx install poetry \
     && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
     && poetry completions zsh > .zfunc/_poetry \
     && poetry self add poetry-bumpversion
