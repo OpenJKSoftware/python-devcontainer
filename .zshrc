@@ -7,3 +7,5 @@ ENABLE_CORRECTION="true"
 COMPLETION_WAITING_DOTS="true"
 plugins=(git poetry colored-man-pages docker-compose docker gitignore pylint)
 source $ZSH/oh-my-zsh.sh
+fpath+=~/.zfunc
+autoload -Uz compinit && compinit

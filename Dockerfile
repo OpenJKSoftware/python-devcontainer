@@ -51,12 +51,17 @@ RUN set -x; \
     && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
 
 USER ${USERNAME}
-RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-COPY --chown=${USERNAME}:${USERNAME} .zshrc /home/${USERNAME}/.zshrc
+WORKDIR /home/${USERNAME}
+COPY --chown=${USERNAME}:${USERNAME} known_hosts .ssh/known_hosts
+RUN set -x ; \
+    mkdir -p .zfunc \
+    && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
 ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
 RUN set -x ; \
     curl -sSL https://install.python-poetry.org | python3 - \
     && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
+    && poetry completions zsh > .zfunc/_poetry \
     && poetry self add poetry-bumpversion
-
+ENTRYPOINT [ "/usr/bin/zsh" ]
