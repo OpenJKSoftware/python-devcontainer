@@ -42,9 +42,7 @@ COPY known_hosts /root/.ssh/known_hosts
 
 RUN set -x; \
     apt-get -y install --no-install-recommends sudo \
-    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
-    && rm -rf /var/lib/apt/lists/*
-
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 ENV PIP_CACHE_DIR=/var/cache/buildkit/pip
 RUN set -x; \
     mkdir -p $PIP_CACHE_DIR \
@@ -64,6 +62,9 @@ RUN set -x ; \
     && python3 -m pipx ensurepath \
     && pipx install poetry \
     && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
-    && poetry completions zsh > .zfunc/_poetry \
+    && mkdir -p ./.oh-my-zsh/plugins/poetry \
+    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
     && poetry self add poetry-bumpversion
+
+RUN sudo rm -rf {/tmp/*,/var/cache/apt,./*,/var/lib/apt/lists/*,$PIP_CACHE_DIR}
 ENTRYPOINT [ "/usr/bin/zsh" ]
