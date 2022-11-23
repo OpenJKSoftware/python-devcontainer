@@ -66,5 +66,5 @@ RUN set -x ; \
     && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
     && poetry self add poetry-bumpversion
 
-RUN sudo rm -rf {/tmp/*,/var/cache/apt,./*,/var/lib/apt/lists/*,$PIP_CACHE_DIR}
+RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
 ENTRYPOINT [ "/usr/bin/zsh" ]
