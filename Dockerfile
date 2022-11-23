@@ -18,6 +18,7 @@ RUN set -x; \
     && apt-get install -y --no-install-recommends \
     build-essential \
     apt-transport-https \
+    ca-certificates \
     rsync \
     expect \
     git \
