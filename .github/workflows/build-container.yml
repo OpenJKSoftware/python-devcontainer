@@ -46,7 +46,7 @@ jobs:
         id: image_tag_lower
         # Black magic fuckery to ensure lowercase string as docker tag
         run: |
-          IMAGE_NAME=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.python-version }}" | awk '{print tolower($0)}')
+          IMAGE_TAG=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.python-version }}" | awk '{print tolower($0)}')
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
