@@ -45,7 +45,8 @@ COPY known_hosts /root/.ssh/known_hosts
 RUN set -x; \
     apt-get -y install --no-install-recommends sudo \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-ENV PIP_CACHE_DIR=/var/cache/buildkit/pip
+ENV PIP_CACHE_DIR=/var/cache/buildkit/pip \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN set -x; \
     mkdir -p $PIP_CACHE_DIR \
     && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
