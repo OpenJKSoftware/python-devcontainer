@@ -28,9 +28,11 @@ RUN set -x; \
     zsh \
     fonts-powerline \
     htop \
+    neovim \
     && useradd -ms /usr/bin/zsh ${USERNAME} \
     && mkdir -p /root/.ssh \
-    && chmod 700 /root/.ssh/
+    && chmod 700 /root/.ssh/\
+    && echo "alias vim=nvim" > /etc/profile.d/vim_nvim.sh
 
 RUN set -x; \
     apt-get install locales -y --no-install-recommends \
