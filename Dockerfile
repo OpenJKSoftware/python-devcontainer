@@ -34,6 +34,8 @@ RUN set -x; \
     && chmod 700 /root/.ssh/\
     && echo "alias vim=nvim" > /etc/profile.d/vim_nvim.sh
 
+ENV EDITOR=vim
+
 RUN set -x; \
     apt-get install locales -y --no-install-recommends \
     && echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
