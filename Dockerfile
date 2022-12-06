@@ -28,14 +28,15 @@ RUN set -x; \
     zsh \
     fonts-powerline \
     htop \
+    fzf \
     neovim \
-    && useradd -ms /usr/bin/zsh ${USERNAME} \
-    && mkdir -p /root/.ssh \
+    && useradd --shell /usr/bin/zsh --create-home ${USERNAME}\
+    && mkdir -p /root/.ssh\
     && chmod 700 /root/.ssh/\
-    && echo "alias vim=nvim" > /etc/profile.d/vim_nvim.sh
+    && echo "alias vi=nvim" > /etc/profile.d/vim_nvim.sh
+ENV EDITOR=nvim
 
-ENV EDITOR=vim
-
+# Fix Locale issues
 RUN set -x; \
     apt-get install locales -y --no-install-recommends \
     && echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
@@ -44,25 +45,34 @@ RUN set -x; \
     && echo "LANG=en_US.UTF-8" > /etc/locale.conf \
     && locale-gen en_US.UTF-8
 
+# Known hosts for Root and User
 COPY known_hosts /root/.ssh/known_hosts
+COPY --chown=${USERNAME}:${USERNAME} known_hosts /home/${USERNAME}/.ssh/known_hosts
 
+# Sudo Support
 RUN set -x; \
     apt-get -y install --no-install-recommends sudo \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Pip Settings
 ENV PIP_CACHE_DIR=/var/cache/buildkit/pip \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN set -x; \
     mkdir -p $PIP_CACHE_DIR \
     && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
 
+# Non Root User
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
-COPY --chown=${USERNAME}:${USERNAME} known_hosts .ssh/known_hosts
+
+# Oh-My-Zsh user config
 RUN set -x ; \
     mkdir -p .zfunc \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
+
+# Poetry
 ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
 RUN set -x ; \
     curl -sSL https://install.python-poetry.org | python3 - \
