@@ -96,7 +96,8 @@ RUN set -x ; \
     poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
     && mkdir -p ./.oh-my-zsh/plugins/poetry \
     && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
-    && poetry config virtualenvs.create false
+    && poetry config virtualenvs.create false \
+    && poetry config installer.max-workers 10
 
 RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
 ENTRYPOINT [ "/usr/bin/zsh" ]
