@@ -29,6 +29,7 @@ RUN set -x; \
     htop \
     fzf \
     neovim \
+    jq \
     && useradd --shell /usr/bin/zsh --create-home ${USERNAME}\
     && mkdir -p /root/.ssh\
     && chmod 700 /root/.ssh/\
@@ -78,7 +79,8 @@ RUN set -x ; \
     && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
     && mkdir -p ./.oh-my-zsh/plugins/poetry \
     && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
-    && poetry self add poetry-bumpversion
+    && poetry self add poetry-bumpversion \
+    && pip install yq
 
 RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
 ENTRYPOINT [ "/usr/bin/zsh" ]
