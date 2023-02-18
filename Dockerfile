@@ -1,12 +1,34 @@
+# Basic Python package with Company CAs and sudo User
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.8
-ARG POETRY_VERSION=1.3.2
 
-# Basic Python package with Company CAs and sudo User
-FROM python:$PYTHONVERSION-buster
-LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
+FROM python:${PYTHONVERSION}-buster as python-base
 
+ENV POETRY_VERSION=1.3.2
+ENV POETRY_CACHE_DIR=/opt/.cache
+ENV POETRY_VENV=/opt/poetry-venv
+
+# Pip Settings
+ENV PIP_CACHE_DIR=/var/cache/buildkit/pip \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN set -x; \
+    mkdir -p $PIP_CACHE_DIR \
+    && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
+
+
+FROM python-base as poetry-base
+
+# Poetry install
+RUN set -x; \
+    python3 -m venv $POETRY_VENV \
+    && $POETRY_VENV/bin/pip install -U pip setuptools \
+    && $POETRY_VENV/bin/pip install poetry==$POETRY_VERSION \
+    && $POETRY_VENV/bin/poetry self add poetry-bumpversion
+
+
+FROM python-base as devcontainer
 ARG USERNAME
+LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
 
 # Switch sh With Bash
 RUN set -x; \
@@ -31,9 +53,9 @@ RUN set -x; \
     fzf \
     neovim \
     jq \
-    && useradd --shell /usr/bin/zsh --create-home ${USERNAME}\
-    && mkdir -p /root/.ssh\
-    && chmod 700 /root/.ssh/\
+    && useradd --shell /usr/bin/zsh --create-home ${USERNAME} \
+    && mkdir -p /root/.ssh \
+    && chmod 700 /root/.ssh/ \
     && echo "alias vi=nvim" > /etc/profile.d/vim_nvim.sh
 ENV EDITOR=nvim
 
@@ -55,19 +77,11 @@ RUN set -x; \
     apt-get -y install --no-install-recommends sudo \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-# Pip Settings
-ENV PIP_CACHE_DIR=/var/cache/buildkit/pip \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
-RUN set -x; \
-    mkdir -p $PIP_CACHE_DIR \
-    && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
+# Copy Poetry from other stage and add to path
+COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_VENV} ${POETRY_VENV}
+ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
 # Non Root User
-
-RUN set -x; \
-    pip install poetry==$POETRY_VERSION yq \
-    && poetry self add poetry-bumpversion
-
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
