@@ -1,5 +1,6 @@
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.8
+ARG POETRY_VERSION=1.3.2
 
 # Basic Python package with Company CAs and sudo User
 FROM python:$PYTHONVERSION-buster
@@ -62,6 +63,11 @@ RUN set -x; \
     && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
 
 # Non Root User
+
+RUN set -x; \
+    pip install poetry==$POETRY_VERSION yq \
+    && poetry self add poetry-bumpversion
+
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
@@ -71,16 +77,12 @@ RUN set -x ; \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
-
 # Poetry
 ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
 RUN set -x ; \
-    curl -sSL https://install.python-poetry.org | python3 - \
-    && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
+    poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
     && mkdir -p ./.oh-my-zsh/plugins/poetry \
-    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
-    && poetry self add poetry-bumpversion \
-    && pip install yq
+    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry
 
 RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
 ENTRYPOINT [ "/usr/bin/zsh" ]
