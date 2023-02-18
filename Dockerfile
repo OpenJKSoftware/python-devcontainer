@@ -7,10 +7,9 @@ LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-d
 
 ARG USERNAME
 
-# Switch sh With Bash and enable Apt Cache
+# Switch sh With Bash
 RUN set -x; \
-    rm /bin/sh && ln -s /bin/bash /bin/sh \
-    && rm -f /etc/apt/apt.conf.d/docker-clear
+    rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install Base Reqs
 RUN set -x; \
