@@ -5,15 +5,13 @@ ARG PYTHONVERSION=3.8
 FROM python:${PYTHONVERSION}-buster as python-base
 
 ENV POETRY_VERSION=1.3.2
-ENV POETRY_CACHE_DIR=/opt/.cache
-ENV POETRY_VENV=/opt/poetry-venv
-
-# Pip Settings
-ENV PIP_CACHE_DIR=/var/cache/buildkit/pip \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
-RUN set -x; \
-    mkdir -p $PIP_CACHE_DIR \
-    && chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR
+ENV POETRY_CACHE_DIR=/var/cache/poetry \
+    POETRY_VENV=/opt/poetry-venv \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_CACHE_DIR=/var/cache/buildkit/pip
+RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
 
 
 FROM python-base as poetry-base
@@ -80,6 +78,7 @@ RUN set -x; \
 # Copy Poetry from other stage and add to path
 COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_VENV} ${POETRY_VENV}
 ENV PATH="${PATH}:${POETRY_VENV}/bin"
+RUN chown ${USERNAME}:${USERNAME} $PIP_CACHE_DIR $POETRY_CACHE_DIR
 
 # Non Root User
 USER ${USERNAME}
@@ -96,7 +95,8 @@ ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
 RUN set -x ; \
     poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
     && mkdir -p ./.oh-my-zsh/plugins/poetry \
-    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry
+    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
+    && poetry config virtualenvs.create false
 
 RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
 ENTRYPOINT [ "/usr/bin/zsh" ]
