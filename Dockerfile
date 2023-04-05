@@ -2,7 +2,7 @@
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.8
 
-FROM python:${PYTHONVERSION}-buster as python-base
+FROM python:${PYTHONVERSION}-bullseye as python-base
 
 ENV POETRY_VERSION=1.3.2
 ENV POETRY_CACHE_DIR=/var/cache/poetry \
@@ -34,14 +34,16 @@ RUN set -x; \
 
 # Install Base Reqs
 RUN set -x; \
-    apt-get update \
+    echo "deb http://deb.debian.org/debian bullseye-backports main" >/etc/apt/sources.list.d/bullseye-backports.list \
+    && apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
     build-essential \
     apt-transport-https \
     ca-certificates \
     rsync \
     expect \
-    git \
+    git/bullseye-backports \
     openssh-client  \
     manpages \
     less \
