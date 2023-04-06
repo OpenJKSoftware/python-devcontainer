@@ -53,6 +53,7 @@ RUN set -x; \
     fzf \
     neovim \
     jq \
+    lsb-release \
     && useradd --shell /usr/bin/zsh --create-home ${USERNAME} \
     && mkdir -p /root/.ssh \
     && chmod 700 /root/.ssh/ \
