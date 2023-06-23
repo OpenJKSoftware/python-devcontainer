@@ -52,6 +52,7 @@ RUN set -x; \
     htop \
     fzf \
     neovim \
+    pv \
     jq \
     lsb-release \
     && useradd --shell /usr/bin/zsh --create-home ${USERNAME} \
