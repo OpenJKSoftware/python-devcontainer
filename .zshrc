@@ -9,3 +9,6 @@ plugins=(git poetry colored-man-pages docker-compose docker gitignore pylint fzf
 source $ZSH/oh-my-zsh.sh
 fpath+=~/.zfunc
 autoload -Uz compinit && compinit
+HISTFILE=~/.commandhistory/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000

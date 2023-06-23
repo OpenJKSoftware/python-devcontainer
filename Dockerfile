@@ -89,7 +89,7 @@ WORKDIR /home/${USERNAME}
 
 # Oh-My-Zsh user config
 RUN set -x ; \
-    mkdir -p .zfunc \
+    mkdir -p {.zfunc,.commandhistory} \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
