@@ -41,6 +41,7 @@ RUN set -x; \
     build-essential \
     apt-transport-https \
     ca-certificates \
+    iputils-ping \
     rsync \
     expect \
     git/bullseye-backports \
