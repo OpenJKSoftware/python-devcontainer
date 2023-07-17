@@ -3,30 +3,13 @@ ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
 
 FROM python:${PYTHONVERSION}-bullseye as python-base
-
-ENV POETRY_VERSION=1.5.1
-ENV POETRY_CACHE_DIR=/var/cache/poetry \
-    POETRY_VENV=/opt/poetry-venv \
-    PYTHONFAULTHANDLER=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_CACHE_DIR=/var/cache/buildkit/pip
-RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
-
-
-FROM python-base as poetry-base
-
-# Poetry install
-RUN set -x; \
-    python3 -m venv $POETRY_VENV \
-    && $POETRY_VENV/bin/pip install -U pip setuptools \
-    && $POETRY_VENV/bin/pip install poetry==$POETRY_VERSION \
-    && $POETRY_VENV/bin/poetry self add poetry-bumpversion
-
-
-FROM python-base as devcontainer
 ARG USERNAME
 LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
+
+ENV POETRY_VERSION=1.5.1
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=on
 
 # Switch sh With Bash
 RUN set -x; \
@@ -80,10 +63,8 @@ RUN set -x; \
     apt-get -y install --no-install-recommends sudo \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-# Copy Poetry from other stage and add to path
-COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_VENV} ${POETRY_VENV}
-ENV PATH="${PATH}:${POETRY_VENV}/bin"
-RUN chown ${USERNAME}:${USERNAME} $PIP_CACHE_DIR $POETRY_CACHE_DIR
+# Install Poetry as Root
+RUN pip install -U pip setuptools poetry==$POETRY_VERSION && poetry config virtualenvs.create false
 
 # Non Root User
 USER ${USERNAME}
@@ -97,12 +78,17 @@ COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
 # Poetry
 ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
-RUN set -x ; \
-    poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
-    && mkdir -p ./.oh-my-zsh/plugins/poetry \
-    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
+# Poetry install for user
+# We alias poetry to sudo poetry to deal with permissions errors, when poetry tries to write to site packages
+RUN set -x; \
+    echo "alias poetry='sudo poetry'" >> /home/${USERNAME}/.zshrc \
+    && echo "alias poetry='sudo poetry'" >> /home/${USERNAME}/.bashrc \
     && poetry config virtualenvs.create false \
-    && poetry config installer.max-workers 10
+    && poetry config installer.max-workers 10 \
+    && sudo poetry self add poetry-bumpversion \
+    && poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
+    && mkdir -p ./.oh-my-zsh/plugins/poetry \
+    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry
 
-RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
+RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*}
 ENTRYPOINT [ "/usr/bin/zsh" ]
