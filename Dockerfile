@@ -1,10 +1,10 @@
 # Basic Python package with Company CAs and sudo User
 ARG USERNAME=ContainerUser
-ARG PYTHONVERSION=3.8
+ARG PYTHONVERSION=3.11
 
 FROM python:${PYTHONVERSION}-bullseye as python-base
 
-ENV POETRY_VERSION=1.3.2
+ENV POETRY_VERSION=1.5.1
 ENV POETRY_CACHE_DIR=/var/cache/poetry \
     POETRY_VENV=/opt/poetry-venv \
     PYTHONFAULTHANDLER=1 \
