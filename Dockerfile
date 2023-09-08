@@ -6,7 +6,8 @@ FROM python:${PYTHONVERSION}-bullseye as python-base
 
 ENV POETRY_VERSION=1.5.1
 ENV POETRY_CACHE_DIR=/var/cache/poetry \
-    POETRY_VENV=/opt/poetry-venv \
+    POETRY_HOME=/opt/poetry \
+    PATH=/opt/poetry/bin:${PATH}\
     PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
@@ -18,11 +19,8 @@ FROM python-base as poetry-base
 
 # Poetry install
 RUN set -x; \
-    python3 -m venv $POETRY_VENV \
-    && $POETRY_VENV/bin/pip install -U pip setuptools \
-    && $POETRY_VENV/bin/pip install poetry==$POETRY_VERSION \
-    && $POETRY_VENV/bin/poetry self add poetry-bumpversion
-
+    curl -sSL https://install.python-poetry.org | python3 - \
+    && poetry self add poetry-bumpversion
 
 FROM python-base as devcontainer
 ARG USERNAME
@@ -34,8 +32,7 @@ RUN set -x; \
 
 # Install Base Reqs
 RUN set -x; \
-    echo "deb http://deb.debian.org/debian bullseye-backports main" >/etc/apt/sources.list.d/bullseye-backports.list \
-    && apt-get update \
+    apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
     build-essential \
@@ -44,7 +41,7 @@ RUN set -x; \
     iputils-ping \
     rsync \
     expect \
-    git/bullseye-backports \
+    git\
     openssh-client  \
     manpages \
     less \
@@ -81,8 +78,7 @@ RUN set -x; \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # Copy Poetry from other stage and add to path
-COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_VENV} ${POETRY_VENV}
-ENV PATH="${PATH}:${POETRY_VENV}/bin"
+COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_HOME} ${POETRY_HOME}
 RUN chown ${USERNAME}:${USERNAME} $PIP_CACHE_DIR $POETRY_CACHE_DIR
 
 # Non Root User
@@ -101,9 +97,6 @@ RUN set -x ; \
     poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
     && mkdir -p ./.oh-my-zsh/plugins/poetry \
     && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
-    && sudo mkdir -p /var/cache/poetry_venvs \
-    && sudo chown $USERNAME:$USERNAME /var/cache/poetry_venvs \
-    && poetry config virtualenvs.path /var/cache/poetry_venvs \
     && poetry config installer.max-workers 10
 
 RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
