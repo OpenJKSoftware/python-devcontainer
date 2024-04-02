@@ -4,7 +4,7 @@ ARG PYTHONVERSION=3.11
 
 FROM python:${PYTHONVERSION}-bullseye as python-base
 
-ENV POETRY_VERSION=1.5.1
+ENV POETRY_VERSION=1.8.2
 ENV POETRY_CACHE_DIR=/var/cache/poetry \
     POETRY_HOME=/opt/poetry \
     PATH=/opt/poetry/bin:${PATH}\
