@@ -53,7 +53,7 @@ RUN set -x; \
     pv \
     jq \
     lsb-release \
-    && useradd --shell /usr/bin/zsh --create-home ${USERNAME} \
+    && useradd --shell /usr/bin/zsh --create-home ${USERNAME} -u 1000 \
     && mkdir -p /root/.ssh \
     && chmod 700 /root/.ssh/ \
     && echo "alias vi=nvim" > /etc/profile.d/vim_nvim.sh
