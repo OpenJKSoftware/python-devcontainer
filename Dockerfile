@@ -2,7 +2,7 @@
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
 
-FROM python:${PYTHONVERSION}-bullseye as python-base
+FROM python:${PYTHONVERSION} as python-base
 
 ENV POETRY_VERSION=1.8.2
 ENV POETRY_CACHE_DIR=/var/cache/poetry \
