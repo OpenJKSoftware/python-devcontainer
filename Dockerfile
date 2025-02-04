@@ -22,6 +22,10 @@ RUN set -x; \
     curl -sSL https://install.python-poetry.org | python3 - \
     && poetry self add poetry-bumpversion
 
+# Install uv
+RUN set -x; \
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
 FROM python-base as devcontainer
 ARG USERNAME
 LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
