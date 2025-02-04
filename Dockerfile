@@ -2,7 +2,7 @@
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
 
-FROM python:${PYTHONVERSION} as python-base
+FROM python:${PYTHONVERSION} AS python-base
 
 ENV POETRY_VERSION=2.0.1
 ENV POETRY_CACHE_DIR=/var/cache/poetry \
@@ -15,52 +15,31 @@ ENV POETRY_CACHE_DIR=/var/cache/poetry \
 RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
 
 
-FROM python-base as poetry-base
+FROM python-base AS poetry-base
 
 # Poetry install
 RUN set -x; \
     curl -sSL https://install.python-poetry.org | python3 - \
     && poetry self add poetry-bumpversion
 
+
+FROM python-base AS devcontainer
+ARG USERNAME
+LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
+
 # Install uv
 RUN set -x; \
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
-FROM python-base as devcontainer
-ARG USERNAME
-LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
-
-# Switch sh With Bash
-RUN set -x; \
-    rm /bin/sh && ln -s /bin/bash /bin/sh
-
 # Install Base Reqs
-RUN set -x; \
-    apt-get update \
-    && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends \
-    build-essential \
-    apt-transport-https \
-    ca-certificates \
-    iputils-ping \
-    rsync \
-    expect \
-    git\
-    openssh-client  \
-    manpages \
-    less \
-    zsh \
-    fonts-powerline \
-    htop \
-    fzf \
-    neovim \
-    pv \
-    jq \
-    lsb-release \
-    && useradd --shell /usr/bin/zsh --create-home ${USERNAME} -u 1000 \
-    && mkdir -p /root/.ssh \
-    && chmod 700 /root/.ssh/ \
-    && echo "alias vi=nvim" > /etc/profile.d/vim_nvim.sh
+COPY scripts/install_base_deps.sh /tmp/
+RUN /tmp/install_base_deps.sh
+
+# Create User and setup environment
+RUN useradd --shell /usr/bin/zsh --create-home ${USERNAME} -u 1000 \
+    && mkdir -pm 700 /root/.ssh \
+    && echo "alias vi=nvim" > /etc/profile.d/vim_nvim.sh \
+    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
 ENV EDITOR=nvim
 
 # Fix Locale issues
