@@ -11,7 +11,8 @@ ENV POETRY_CACHE_DIR=/var/cache/poetry \
     PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_CACHE_DIR=/var/cache/buildkit/pip
+    PIP_CACHE_DIR=/var/cache/buildkit/pip \
+    UV_LINK_MODE=copy
 RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
 
 
@@ -28,8 +29,7 @@ ARG USERNAME
 LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
 
 # Install uv
-RUN set -x; \
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install Base Reqs
 COPY scripts/install_base_deps.sh /tmp/
