@@ -63,7 +63,7 @@ RUN set -x; \
 
 # Copy Poetry from other stage and add to path
 COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_HOME} ${POETRY_HOME}
-RUN chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR $POETRY_CACHE_DIR
+RUN chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR $POETRY_CACHE_DIR $UV_CACHE_DIR
 
 # Non Root User
 USER ${USERNAME}
