@@ -11,9 +11,10 @@ ENV POETRY_CACHE_DIR=/var/cache/poetry \
     PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_CACHE_DIR=/var/cache/buildkit/pip \
+    PIP_CACHE_DIR=/var/cache/pip \
+    UV_CACHE_DIR=/var/cache/uv \
     UV_LINK_MODE=copy
-RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
+RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR $UV_CACHE_DIR
 
 
 FROM python-base AS poetry-base
