@@ -1,11 +1,13 @@
+# 🐳 Python Development Container
 
-# Joshs Docker Python Container
+A ready-to-use Python development container.
 
-Python Docker container.
+## ✨ Features
 
-1. Non Root user with Sudo
-2. Default Zsh
-   1. Zsh History persisted in ~/.commandhistory
-3. [Python Poetry](https://python-poetry.org/)
-4. Locale fixes when used as VsCode Devcontainer
+- 👤 Non-root user with sudo privileges
+- 🔧 Pre-configured tools:
+  - ZSH with history in `~/.commandhistory`
+  - [Python Poetry](https://python-poetry.org/)
+  - [UV Package Manager](https://github.com/astral-sh/uv)
+- 🌐 VSCode devcontainer compatibility with locale fixes
 
