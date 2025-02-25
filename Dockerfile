@@ -2,21 +2,19 @@
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
 
+# ############################################################################################################
 FROM python:${PYTHONVERSION} AS python-base
 
-ENV POETRY_VERSION=2.0.1
+ENV POETRY_VERSION=2.1.1
 ENV POETRY_CACHE_DIR=/var/cache/poetry \
     POETRY_HOME=/opt/poetry \
     PATH=/opt/poetry/bin:${PATH}\
     PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_CACHE_DIR=/var/cache/pip \
-    UV_CACHE_DIR=/var/cache/uv \
-    UV_LINK_MODE=copy
-RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR $UV_CACHE_DIR
+    PIP_CACHE_DIR=/var/cache/pip
+RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
 
-
+# ############################################################################################################
 FROM python-base AS poetry-base
 
 # Poetry install
@@ -24,13 +22,16 @@ RUN set -x; \
     curl -sSL https://install.python-poetry.org | python3 - \
     && poetry self add poetry-bumpversion
 
-
+# ############################################################################################################
 FROM python-base AS devcontainer
 ARG USERNAME
 LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+ENV UV_CACHE_DIR=/var/cache/uv \
+    UV_LINK_MODE=copy
+RUN mkdir -p $UV_CACHE_DIR
 
 # Install Base Reqs
 COPY scripts/install_base_deps.sh /tmp/
@@ -63,7 +64,7 @@ RUN set -x; \
 
 # Copy Poetry from other stage and add to path
 COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_HOME} ${POETRY_HOME}
-RUN chown -R ${USERNAME}:${USERNAME} $PIP_CACHE_DIR $POETRY_CACHE_DIR $UV_CACHE_DIR
+RUN bash -c "chown -R ${USERNAME}:${USERNAME} {${PIP_CACHE_DIR},${POETRY_CACHE_DIR},${UV_CACHE_DIR}}"
 
 # Non Root User
 USER ${USERNAME}
@@ -71,7 +72,7 @@ WORKDIR /home/${USERNAME}
 
 # Oh-My-Zsh user config
 RUN set -x ; \
-    mkdir -p {.zfunc,.commandhistory} \
+    bash -c "mkdir -p {.zfunc,.commandhistory}" \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
