@@ -64,7 +64,7 @@ RUN set -x; \
 
 # Copy Poetry from other stage and add to path
 COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_HOME} ${POETRY_HOME}
-RUN bash -c "chown -R ${USERNAME}:${USERNAME} {${PIP_CACHE_DIR},${POETRY_CACHE_DIR},${UV_CACHE_DIR}}"
+RUN bash -c "chown -R $USERNAME:$USERNAME {$PIP_CACHE_DIR,$POETRY_CACHE_DIR,$UV_CACHE_DIR}"
 
 # Non Root User
 USER ${USERNAME}
@@ -84,5 +84,5 @@ RUN set -x ; \
     && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
     && poetry config installer.max-workers 10
 
-RUN sudo rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}
+RUN sudo bash -c "rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}"
 ENTRYPOINT [ "/usr/bin/zsh" ]
