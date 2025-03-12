@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:1.14
 # Basic Python package with Company CAs and sudo User
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
