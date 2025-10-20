@@ -51,13 +51,13 @@ ENV UV_CACHE_DIR=/var/cache/uv \
     UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
     UV_LINK_MODE=copy
 RUN set -x; mkdir -p $UV_CACHE_DIR && mkdir -p $UV_PYTHON_CACHE_DIR
-RUN --mount=type=cache,target=/var/cache/uv,sharing=locked set -x; uv python install ${PYTHONVERSION} --default && uv python pin --global ${PYTHONVERSION}
 
 RUN apt autoremove --purge -y && apt clean -y
 
 # Non Root User
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
+RUN --mount=type=cache,target=/var/cache/uv,sharing=locked set -x; uv python install ${PYTHONVERSION} --default && uv python pin --global ${PYTHONVERSION}
 
 # Oh-My-Zsh user config
 RUN set -x ; \
