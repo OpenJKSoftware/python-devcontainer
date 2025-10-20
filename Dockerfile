@@ -16,14 +16,6 @@ ENV POETRY_CACHE_DIR=/var/cache/poetry \
 RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
 
 # ############################################################################################################
-FROM python-base AS poetry-base
-
-# Poetry install
-RUN set -x; \
-    curl -sSL https://install.python-poetry.org | python3 - \
-    && poetry self add poetry-bumpversion
-
-# ############################################################################################################
 FROM python-base AS devcontainer
 ARG USERNAME
 LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
@@ -63,9 +55,6 @@ RUN set -x; \
     apt-get -y install --no-install-recommends sudo \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-# Copy Poetry from other stage and add to path
-COPY --from=poetry-base --chown=${USERNAME}:${USERNAME} ${POETRY_HOME} ${POETRY_HOME}
-RUN bash -c "chown -R $USERNAME:$USERNAME {$PIP_CACHE_DIR,$POETRY_CACHE_DIR,$UV_CACHE_DIR}"
 
 # Non Root User
 USER ${USERNAME}
@@ -77,13 +66,6 @@ RUN set -x ; \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
-# Poetry
-ENV PATH="/home/${USERNAME}/.local/bin/:${PATH}"
-RUN set -x ; \
-    poetry completions bash | sudo tee /etc/bash_completion.d/poetry.bash-completion > /dev/null \
-    && mkdir -p ./.oh-my-zsh/plugins/poetry \
-    && poetry completions zsh > ./.oh-my-zsh/plugins/poetry/_poetry \
-    && poetry config installer.max-workers 10
 
 RUN sudo bash -c "rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}"
 ENTRYPOINT [ "/usr/bin/zsh" ]
