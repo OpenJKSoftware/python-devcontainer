@@ -48,8 +48,7 @@ COPY --chown=${USERNAME}:${USERNAME} known_hosts /home/${USERNAME}/.ssh/known_ho
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV UV_CACHE_DIR=/var/cache/uv \
     UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
-    UV_LINK_MODE=copy \
-    UV_COMPILE_BYTECODE=1
+    UV_LINK_MODE=copy
 RUN set -x; mkdir -p $UV_CACHE_DIR && mkdir -p $UV_PYTHON_CACHE_DIR
 RUN --mount=type=cache,target=/var/cache/uv,sharing=locked uv python install ${PYTHONVERSION} --default
 
