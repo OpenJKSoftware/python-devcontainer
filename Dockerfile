@@ -4,27 +4,24 @@ ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
 
 # ############################################################################################################
-FROM python:${PYTHONVERSION} AS python-base
+FROM debian:bookworm AS python-base
 
-ENV POETRY_VERSION=2.1.1
-ENV POETRY_CACHE_DIR=/var/cache/poetry \
-    POETRY_HOME=/opt/poetry \
-    PATH=/opt/poetry/bin:${PATH}\
-    PYTHONFAULTHANDLER=1 \
+ENV PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
     PIP_CACHE_DIR=/var/cache/pip
-RUN mkdir -p $PIP_CACHE_DIR $POETRY_CACHE_DIR
+RUN mkdir -p $PIP_CACHE_DIR
 
-# ############################################################################################################
-FROM python-base AS devcontainer
 ARG USERNAME
 LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV UV_CACHE_DIR=/var/cache/uv \
-    UV_LINK_MODE=copy
-RUN mkdir -p $UV_CACHE_DIR
+    UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
+    UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1
+RUN set -x; mkdir -p $UV_CACHE_DIR && mkdir -p $UV_PYTHON_CACHE_DIR
+RUN --mount=type=cache,target=/var/cache uv python install ${PYTHONVERSION} --default
 
 # Install Base Reqs
 COPY scripts/install_base_deps.sh /tmp/
