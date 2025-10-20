@@ -24,9 +24,8 @@ apt-get install -y --no-install-recommends \
     neovim \
     pv \
     jq \
-    lsb-release
-
-# Cleanup
-apt-get clean
+    lsb-release \
+    sudo \
+    net-tools
 
 echo "Base dependencies installation complete"

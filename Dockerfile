@@ -14,14 +14,8 @@ RUN mkdir -p $PIP_CACHE_DIR
 ARG USERNAME
 LABEL org.opencontainers.image.source=https://github.com/OpenJKSoftware/python-devcontainer
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-ENV UV_CACHE_DIR=/var/cache/uv \
-    UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
-    UV_LINK_MODE=copy \
-    UV_COMPILE_BYTECODE=1
-RUN set -x; mkdir -p $UV_CACHE_DIR && mkdir -p $UV_PYTHON_CACHE_DIR
-RUN --mount=type=cache,target=/var/cache uv python install ${PYTHONVERSION} --default
+# Ensure Apt cache is kept between builds
+RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 
 # Install Base Reqs
 COPY scripts/install_base_deps.sh /tmp/
@@ -31,8 +25,11 @@ RUN /tmp/install_base_deps.sh
 RUN useradd --shell /usr/bin/zsh --create-home ${USERNAME} -u 1000 \
     && mkdir -pm 700 /root/.ssh \
     && echo "alias vi=nvim" > /etc/profile.d/vim_nvim.sh \
-    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
+    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 ENV EDITOR=nvim
+
+
 
 # Fix Locale issues
 RUN set -x; \
@@ -47,11 +44,16 @@ RUN set -x; \
 COPY known_hosts /root/.ssh/known_hosts
 COPY --chown=${USERNAME}:${USERNAME} known_hosts /home/${USERNAME}/.ssh/known_hosts
 
-# Sudo Support
-RUN set -x; \
-    apt-get -y install --no-install-recommends sudo \
-    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+ENV UV_CACHE_DIR=/var/cache/uv \
+    UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
+    UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1
+RUN set -x; mkdir -p $UV_CACHE_DIR && mkdir -p $UV_PYTHON_CACHE_DIR
+RUN --mount=type=cache,target=/var/cache/uv,sharing=locked uv python install ${PYTHONVERSION} --default
 
+RUN apt autoremove --purge -y && apt clean -y
 
 # Non Root User
 USER ${USERNAME}
@@ -63,6 +65,4 @@ RUN set -x ; \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
-
-RUN sudo bash -c "rm -rf {./*,/tmp/*,/var/cache/apt/*,/var/lib/apt/lists/*,$PIP_CACHE_DIR/*}"
 ENTRYPOINT [ "/usr/bin/zsh" ]
