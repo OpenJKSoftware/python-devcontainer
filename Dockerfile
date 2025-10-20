@@ -50,7 +50,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV UV_CACHE_DIR=/var/cache/uv \
     UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
     UV_LINK_MODE=copy
-RUN set -x; mkdir -p $UV_CACHE_DIR && mkdir -p $UV_PYTHON_CACHE_DIR
+RUN --mount=type=cache,target=/var/cache/uv set -x; \
+    mkdir -p $UV_CACHE_DIR && chown ${USERNAME}:${USERNAME} $UV_CACHE_DIR && \
+    mkdir -p $UV_PYTHON_CACHE_DIR && chown ${USERNAME}:${USERNAME} $UV_PYTHON_CACHE_DIR
 
 RUN apt autoremove --purge -y && apt clean -y
 
