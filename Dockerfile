@@ -51,6 +51,7 @@ ENV UV_CACHE_DIR=/var/cache/uv \
     UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
     UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/var/cache/uv set -x; \
+    chown ${USERNAME}:${USERNAME} /var/cache && \
     mkdir -p $UV_CACHE_DIR && chown ${USERNAME}:${USERNAME} $UV_CACHE_DIR && \
     mkdir -p $UV_PYTHON_CACHE_DIR && chown ${USERNAME}:${USERNAME} $UV_PYTHON_CACHE_DIR
 
