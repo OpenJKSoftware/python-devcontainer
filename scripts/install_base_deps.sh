@@ -11,6 +11,7 @@ apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     iputils-ping \
+    curl \
     rsync \
     expect \
     git \
