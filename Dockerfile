@@ -4,7 +4,7 @@ ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
 
 # ############################################################################################################
-FROM debian:bookworm AS python-base
+FROM debian:bookworm AS base
 
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
@@ -19,21 +19,22 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloa
 
 # Install Base Reqs
 COPY scripts/install_base_deps.sh /tmp/
-RUN /tmp/install_base_deps.sh
+RUN --mount=target=/var/cache/apt,type=cache,sharing=locked   \
+    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked set -x; /tmp/install_base_deps.sh
 
 # Create User and setup environment
 RUN useradd --shell /usr/bin/zsh --create-home ${USERNAME} -u 1000 \
     && mkdir -pm 700 /root/.ssh \
     && echo "alias vi=nvim" > /etc/profile.d/vim_nvim.sh \
     && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME} \
-    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
+    && chown ${USERNAME}:${USERNAME} /var/cache
 ENV EDITOR=nvim
 
-
-
 # Fix Locale issues
-RUN set -x; \
-    apt-get install locales -y --no-install-recommends \
+RUN --mount=target=/var/cache/apt,type=cache,sharing=locked \
+    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked set -x; \
+    apt update && apt-get install locales -y --no-install-recommends \
     && echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
     && echo "LANG=en_US.utf-8" >> /etc/environment \
     && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
@@ -44,23 +45,9 @@ RUN set -x; \
 COPY known_hosts /root/.ssh/known_hosts
 COPY --chown=${USERNAME}:${USERNAME} known_hosts /home/${USERNAME}/.ssh/known_hosts
 
-# Install uv
-ARG PYTHONVERSION
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-ENV UV_CACHE_DIR=/var/cache/uv \
-    UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
-    UV_LINK_MODE=copy
-RUN --mount=type=cache,target=/var/cache/uv set -x; \
-    chown ${USERNAME}:${USERNAME} /var/cache && \
-    mkdir -p $UV_CACHE_DIR && chown ${USERNAME}:${USERNAME} $UV_CACHE_DIR && \
-    mkdir -p $UV_PYTHON_CACHE_DIR && chown ${USERNAME}:${USERNAME} $UV_PYTHON_CACHE_DIR
-
-RUN apt autoremove --purge -y && apt clean -y
-
 # Non Root User
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
-RUN --mount=type=cache,target=/var/cache/uv,sharing=locked set -x; uv python install ${PYTHONVERSION} --default && uv python pin --global ${PYTHONVERSION}
 
 # Oh-My-Zsh user config
 RUN set -x ; \
@@ -69,3 +56,14 @@ RUN set -x ; \
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 
 ENTRYPOINT [ "/usr/bin/zsh" ]
+
+FROM base AS python-devcontainer
+
+# Install uv
+ARG PYTHONVERSION
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+ENV UV_CACHE_DIR=/var/cache/uv \
+    UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
+    UV_LINK_MODE=copy
+
+RUN --mount=type=cache,target=/var/cache/uv,sharing=locked,uid=1000 set -x; uv python install ${PYTHONVERSION} --default && uv python pin --global ${PYTHONVERSION}
