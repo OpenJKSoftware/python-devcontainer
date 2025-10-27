@@ -66,4 +66,4 @@ ENV UV_CACHE_DIR=/var/cache/uv \
     UV_PYTHON_CACHE_DIR=/var/cache/uv/python \
     UV_LINK_MODE=copy
 
-RUN --mount=type=cache,target=/var/cache/uv,sharing=locked,uid=1000 set -x; uv python install ${PYTHONVERSION} --default && uv python pin --global ${PYTHONVERSION}
+RUN --mount=type=cache,target=$UV_CACHE_DIR,uid=1000 set -x; uv python install ${PYTHONVERSION} --default && uv python pin --global ${PYTHONVERSION}
