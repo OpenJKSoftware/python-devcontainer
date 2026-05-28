@@ -53,7 +53,7 @@ ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 
 # Starship user config
 RUN set -x ; \
-    bash -c "mkdir -p {.zfunc,.commandhistory,.config}" \
+    bash -c "mkdir -p {.zfunc,.commandhistory,.config,.local/bin}" \
     && curl -sS https://starship.rs/install.sh | sh -s -- -y -b /home/${USERNAME}/.local/bin
 COPY --chown=${USERNAME}:${USERNAME} .zshrc .zshrc
 COPY --chown=${USERNAME}:${USERNAME} starship.toml /home/${USERNAME}/.config/starship.toml
