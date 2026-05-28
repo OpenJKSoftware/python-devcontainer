@@ -2,9 +2,10 @@
 # Basic Python package with Company CAs and sudo User
 ARG USERNAME=ContainerUser
 ARG PYTHONVERSION=3.11
+ARG DEBIANVERSION=bookworm
 
 # ############################################################################################################
-FROM debian:bookworm AS base
+FROM debian:${DEBIANVERSION} AS base
 
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
